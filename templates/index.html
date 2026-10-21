@@ -268,6 +268,10 @@
   .notice-yellow { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow-border); }
   .notice-info { background: var(--accent-soft); color: var(--accent-hover); border: 1px solid var(--accent-border); margin-bottom: 16px; }
   .notice p { margin: 0; }
+  .save-mode { align-items: center; flex-wrap: wrap; justify-content: space-between; }
+  .save-mode p { display: flex; gap: .5rem; align-items: center; }
+  .save-mode form { margin: 0; }
+  .save-mode .btn { min-height: 44px; padding-block: 0; }
 
   .filters { display: grid; gap: 12px; margin-bottom: 16px; align-items: end; }
   @media (min-width: 768px) { .filters { grid-template-columns: minmax(200px, 1fr) auto auto 200px; gap: 16px; } }
@@ -634,6 +638,18 @@
         </div>
       </div>
 
+      {% if saved is not none %}
+      <div class="notice notice-info save-mode">
+        <p><span data-icon="lock"></span>Signed in as the professor. Grades, notes and the summary review are saved.</p>
+        <form method="post" action="{{ url_for('parti.logout') }}"><button type="submit" class="btn btn-ghost">Sign out</button></form>
+      </div>
+      {% elif professor_enabled %}
+      <div class="notice notice-info save-mode">
+        <p><span data-icon="info"></span>Demo mode: changes reset when you reload.</p>
+        <a class="btn btn-ghost" href="{{ url_for('parti.login') }}">Sign in to save</a>
+      </div>
+      {% endif %}
+
       <div class="tabs" role="tablist" aria-label="Session views">
         <button type="button" class="tab" role="tab" id="tab-students" aria-controls="tabpanel-students" aria-selected="true">Students</button>
         <button type="button" class="tab" role="tab" id="tab-summary" aria-controls="tabpanel-summary" aria-selected="false" tabindex="-1">Class summary</button>
@@ -799,14 +815,16 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
-<p class="proto-label" id="proto-label">Prototype · dashboard uses sample data</p>
+<p class="proto-label" id="proto-label">Prototype · dashboard uses sample data{% if saved is none %}, nothing is saved{% endif %}</p>
 
 <script>
 /* Sample data: rendered from sample_data.py */
 const DATA = {{ data | tojson }};
+/* What the signed-in professor has saved; null in demo mode */
+const SAVED = {{ saved | tojson }};
 
 /* ============================================================
-   State (in memory only — a reload resets the demo)
+   State (in demo mode it lives in memory only and a reload resets it)
    ============================================================ */
 const state = {
   view: 'landing',
@@ -820,7 +838,11 @@ const state = {
   selectedId: null,
   reviewed: false
 };
-DATA.students.forEach(s => { if (s.grade != null) state.grades[s.id] = s.grade; });
+if (SAVED) {
+  Object.assign(state, { grades: SAVED.grades, notes: SAVED.notes, reviewed: SAVED.reviewed });
+} else {
+  DATA.students.forEach(s => { if (s.grade != null) state.grades[s.id] = s.grade; });
+}
 
 /* ============================================================
    Helpers
@@ -907,16 +929,40 @@ function bandFor(grade) {
 }
 
 let toastTimer;
-function toast(msg) {
+function toast(msg, iconName = 'check') {
   const t = $('#toast');
   t.textContent = '';
   clearTimeout(toastTimer);
   setTimeout(() => {
-    t.innerHTML = icon('check', 'icon-sm') + '<span></span>';
+    t.innerHTML = icon(iconName, 'icon-sm') + '<span></span>';
     t.querySelector('span').textContent = msg;
     t.classList.add('show');
     toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
   }, 30);
+}
+
+/* ============================================================
+   Saving (signed in only)
+   ============================================================ */
+// Resolves to { ok: true, body } or { ok: false, error } with a message for the professor.
+// In demo mode nothing is sent and the change only lives in this page.
+async function save(method, url, payload) {
+  if (!SAVED) return { ok: true, body: null };
+  let res;
+  try {
+    res = await fetch(url, {
+      method,
+      headers: payload === undefined ? {} : { 'Content-Type': 'application/json' },
+      body: payload === undefined ? undefined : JSON.stringify(payload)
+    });
+  } catch (err) {
+    return { ok: false, error: 'Not saved. Check your connection and try again.' };
+  }
+  const body = res.status === 204 ? null : await res.json().catch(() => ({}));
+  if (res.ok) return { ok: true, body };
+  if (res.status === 401) return { ok: false, error: 'Not saved: you have been signed out. Reload the page and sign in again.' };
+  const fieldError = body && body.errors && Object.values(body.errors)[0];
+  return { ok: false, error: fieldError || 'Not saved. Please try again in a moment.' };
 }
 
 /* ============================================================
@@ -1192,8 +1238,15 @@ function renderReviewed() {
   setSwitch($('#toggle-reviewed'), state.reviewed);
   $('#ai-label-text').textContent = 'AI-generated from contribution summaries · ' + (state.reviewed ? 'Reviewed by professor' : 'Not yet reviewed by professor');
 }
-$('#toggle-reviewed').addEventListener('click', () => {
-  state.reviewed = !state.reviewed;
+$('#toggle-reviewed').addEventListener('click', async () => {
+  const btn = $('#toggle-reviewed');
+  const reviewed = !state.reviewed;
+  btn.disabled = true;
+  const result = await save('PUT', '/api/summary/reviewed', { reviewed });
+  btn.disabled = false;
+  btn.focus();
+  if (!result.ok) { toast(result.error, 'alert'); return; }
+  state.reviewed = reviewed;
   renderReviewed();
   toast(state.reviewed ? 'Summary marked as reviewed' : 'Summary marked as not reviewed');
 });
@@ -1363,28 +1416,43 @@ chipWrap.addEventListener('click', e => {
   setError('note', '');
 });
 
+function fmtNoteTime(iso) {
+  return new Date(iso).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
 function renderNotes() {
   const list = state.notes[state.selectedId] || [];
   $('#notes-list').innerHTML = list.map((n, i) => `
-    <li><div><p>${esc(n.text)}</p><time>${esc(n.time)}</time></div>
+    <li><div><p>${esc(n.text)}</p><time datetime="${esc(n.created)}">${esc(fmtNoteTime(n.created))}</time></div>
     <button type="button" class="icon-btn" data-del="${i}" aria-label="Delete note: ${esc(n.text.slice(0, 40))}">${icon('trash')}</button></li>`).join('');
 }
-$('#add-note').addEventListener('click', () => {
+$('#add-note').addEventListener('click', async () => {
   const ta = $('#note-text');
+  const btn = $('#add-note');
+  const id = state.selectedId;
   const text = ta.value.trim();
   if (!text) { setError('note', 'Write a note or pick a quick chip first.'); ta.focus(); return; }
-  const time = new Date().toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-  (state.notes[state.selectedId] = state.notes[state.selectedId] || []).unshift({ text, time });
+  btn.disabled = true;
+  const result = await save('POST', `/api/students/${encodeURIComponent(id)}/notes`, { text });
+  btn.disabled = false;
+  if (!result.ok) { setError('note', result.error); ta.focus(); return; }
+  const note = result.body || { id: null, text, created: new Date().toISOString() };
+  (state.notes[id] = state.notes[id] || []).unshift(note);
+  if (state.selectedId !== id) return;
   ta.value = '';
   setError('note', '');
   renderNotes();
   toast('Note added');
 });
 $('#note-text').addEventListener('input', () => setError('note', ''));
-$('#notes-list').addEventListener('click', e => {
+$('#notes-list').addEventListener('click', async e => {
   const btn = e.target.closest('[data-del]');
   if (!btn) return;
-  state.notes[state.selectedId].splice(Number(btn.dataset.del), 1);
+  const list = state.notes[state.selectedId];
+  const note = list[Number(btn.dataset.del)];
+  btn.disabled = true;
+  const result = note.id == null ? { ok: true } : await save('DELETE', `/api/notes/${note.id}`);
+  if (!result.ok) { btn.disabled = false; setError('note', result.error); btn.focus(); return; }
+  list.splice(list.indexOf(note), 1);
   renderNotes();
   $('#note-text').focus();
   toast('Note deleted');
@@ -1394,27 +1462,37 @@ $('#notes-list').addEventListener('click', e => {
 function refreshAfterGradeChange() {
   renderProgress();
   renderTable();
-  renderPanelStatus();
+  // The panel may have closed while the grade was saving
+  if (state.selectedId) renderPanelStatus();
 }
-$('#save-grade').addEventListener('click', () => {
+$('#save-grade').addEventListener('click', async () => {
   const input = $('#grade-input');
+  const btn = $('#save-grade');
+  const id = state.selectedId;
   const raw = input.value.trim();
   const v = Number(raw);
   if (raw === '' || Number.isNaN(v)) { setError('grade', 'Enter a grade between 0 and 10.'); input.focus(); return; }
   if (v < 0 || v > 10) { setError('grade', 'The grade must be between 0 and 10.'); input.focus(); return; }
   if (Math.round(v * 2) !== v * 2) { setError('grade', 'Use steps of 0.5, for example 7 or 7.5.'); input.focus(); return; }
   setError('grade', '');
-  state.grades[state.selectedId] = v;
+  btn.disabled = true;
+  const result = await save('PUT', `/api/grades/${encodeURIComponent(id)}`, { grade: v });
+  btn.disabled = false;
+  if (!result.ok) { setError('grade', result.error); input.focus(); return; }
+  state.grades[id] = v;
   refreshAfterGradeChange();
-  toast(`Grade saved for ${studentById(state.selectedId).name}.`);
+  toast(`Grade saved for ${studentById(id).name}.`);
 });
 $('#grade-input').addEventListener('keydown', e => { if (e.key === 'Enter') $('#save-grade').click(); });
 $('#grade-input').addEventListener('input', () => setError('grade', ''));
-function clearGrade() {
-  delete state.grades[state.selectedId];
+async function clearGrade() {
+  const id = state.selectedId;
+  const result = await save('DELETE', `/api/grades/${encodeURIComponent(id)}`);
+  if (!result.ok) { setError('grade', result.error); $('#grade-input').focus(); return; }
+  delete state.grades[id];
   refreshAfterGradeChange();
   $('#grade-input').focus();
-  toast(`Grade cleared for ${studentById(state.selectedId).name}.`);
+  toast(`Grade cleared for ${studentById(id).name}.`);
 }
 
 /* ============================================================
@@ -1471,6 +1549,10 @@ $('#modal-send').addEventListener('click', () => toast('Sent'));
    Init
    ============================================================ */
 hydrateIcons();
+if (location.hash === '#dashboard') {
+  history.replaceState(null, '', location.pathname);
+  setView('dashboard');
+}
 renderSessionHeader();
 renderProgress();
 renderInsights();

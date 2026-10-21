@@ -10,12 +10,18 @@ from app import create_app, get_db  # noqa: E402
 from sample_data import DATA  # noqa: E402
 
 PASSWORD = "test-password"
+PROFESSOR_PASSWORD = "prof-password"
 VALID = {"name": "Ana López", "school": "Business School", "email": "ana@university.edu"}
 
 
 @pytest.fixture()
 def app(tmp_path):
-    return create_app({"TESTING": True, "DATABASE": str(tmp_path / "test.db"), "ADMIN_PASSWORD": PASSWORD})
+    return create_app({
+        "TESTING": True,
+        "DATABASE": str(tmp_path / "test.db"),
+        "ADMIN_PASSWORD": PASSWORD,
+        "PROFESSOR_PASSWORD": PROFESSOR_PASSWORD,
+    })
 
 
 @pytest.fixture()
@@ -123,6 +129,121 @@ def test_csv_export_neutralises_formulas(client):
     body = res.get_data(as_text=True)
     assert body.splitlines()[0] == "Name,School,Email,Signed up,Last updated"
     assert "'=HYPERLINK" in body
+
+
+# ---------------------------------------------------------------- professor sign-in
+
+@pytest.fixture()
+def professor(client):
+    res = client.post("/login", data={"password": PROFESSOR_PASSWORD})
+    assert res.status_code == 302
+    return client
+
+
+def saved_grades(app):
+    with app.app_context():
+        return {r[0]: r[1] for r in get_db().execute("SELECT student_id, grade FROM grades")}
+
+
+def test_wrong_password_does_not_sign_in(client):
+    res = client.post("/login", data={"password": "wrong"})
+    assert res.status_code == 401
+    assert "Try again" in res.get_data(as_text=True)
+    assert client.put("/api/grades/s9", json={"grade": 7}).status_code == 401
+
+
+def test_login_is_off_without_password(tmp_path):
+    app = create_app({"TESTING": True, "DATABASE": str(tmp_path / "t.db"), "PROFESSOR_PASSWORD": ""})
+    client = app.test_client()
+    assert client.get("/login").status_code == 503
+    assert "Sign in to save" not in client.get("/").get_data(as_text=True)
+
+
+def test_demo_page_has_no_saved_state(client):
+    html = client.get("/").get_data(as_text=True)
+    assert "const SAVED = null;" in html
+    assert "Sign in to save" in html
+    assert client.get("/").headers.get("Cache-Control") != "no-store"
+
+
+def test_saving_requires_sign_in(client):
+    assert client.put("/api/grades/s9", json={"grade": 7}).status_code == 401
+    assert client.delete("/api/grades/s1").status_code == 401
+    assert client.post("/api/students/s1/notes", json={"text": "Hi"}).status_code == 401
+    assert client.put("/api/summary/reviewed", json={"reviewed": True}).status_code == 401
+
+
+def test_sample_grades_are_seeded_once(app, professor):
+    assert len(saved_grades(app)) == 8
+    professor.delete("/api/grades/s1")
+    with app.app_context():
+        from app import init_db
+        init_db()
+    assert "s1" not in saved_grades(app)
+
+
+def test_grade_is_saved_updated_and_cleared(app, professor):
+    assert professor.put("/api/grades/s9", json={"grade": 7.5}).get_json() == {"grade": 7.5}
+    professor.put("/api/grades/s9", json={"grade": 8})
+    assert saved_grades(app)["s9"] == 8
+    assert professor.delete("/api/grades/s9").status_code == 204
+    assert "s9" not in saved_grades(app)
+
+
+@pytest.mark.parametrize("grade", [-1, 10.5, 7.25, "7", None, True])
+def test_invalid_grades_are_rejected(app, professor, grade):
+    res = professor.put("/api/grades/s9", json={"grade": grade})
+    assert res.status_code == 400
+    assert "grade" in res.get_json()["errors"]
+    assert "s9" not in saved_grades(app)
+
+
+def test_unknown_student_is_404(professor):
+    assert professor.put("/api/grades/nobody", json={"grade": 7}).status_code == 404
+    assert professor.post("/api/students/nobody/notes", json={"text": "Hi"}).status_code == 404
+
+
+def test_writes_must_be_json(professor):
+    res = professor.put("/api/grades/s9", data="grade=7", content_type="application/x-www-form-urlencoded")
+    assert res.status_code == 400
+
+
+def test_notes_are_added_and_deleted(app, professor):
+    res = professor.post("/api/students/s3/notes", json={"text": "  Strong written follow-up  "})
+    assert res.status_code == 201
+    note = res.get_json()
+    assert note["text"] == "Strong written follow-up"
+    assert note["created"]
+    assert professor.delete(f"/api/notes/{note['id']}").status_code == 204
+    assert professor.delete(f"/api/notes/{note['id']}").status_code == 404
+
+
+def test_empty_or_long_notes_are_rejected(professor):
+    assert professor.post("/api/students/s3/notes", json={"text": "   "}).status_code == 400
+    assert professor.post("/api/students/s3/notes", json={"text": "x" * 2001}).status_code == 400
+
+
+def test_signed_in_page_carries_saved_state(professor):
+    professor.put("/api/grades/s9", json={"grade": 6.5})
+    professor.post("/api/students/s9/notes", json={"text": "<b>Helped a classmate</b>"})
+    professor.put("/api/summary/reviewed", json={"reviewed": True})
+    res = professor.get("/")
+    html = res.get_data(as_text=True)
+    assert res.headers["Cache-Control"] == "no-store"
+    assert '"s9": 6.5' in html
+    assert '"reviewed": true' in html
+    assert "<b>Helped a classmate</b>" not in html  # escaped inside the JSON
+    assert "Sign out" in html
+
+
+def test_reviewed_must_be_boolean(professor):
+    assert professor.put("/api/summary/reviewed", json={"reviewed": "yes"}).status_code == 400
+
+
+def test_logout_ends_the_session(professor):
+    professor.post("/logout")
+    assert professor.put("/api/grades/s9", json={"grade": 7}).status_code == 401
+    assert "const SAVED = null;" in professor.get("/").get_data(as_text=True)
 
 
 # ---------------------------------------------------------------- sample data
