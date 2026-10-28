@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Parti Pilot Sign-ups</title>
+<style>
+  :root {
+    --accent: #4338ca; --accent-soft: #eef2ff; --on-accent: #ffffff;
+    --ink: #101828; --muted: #475467; --line: #e4e7ec;
+    --bg: #f8f9fb; --surface: #ffffff;
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --accent: #a5b4fc; --accent-soft: #1f2347; --on-accent: #0f1320;
+      --ink: #f2f4f7; --muted: #a9b1c1; --line: #2a3042;
+      --bg: #0f1320; --surface: #171c2c;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font); font-size: 1rem; line-height: 1.55; color: var(--ink); background: var(--bg); }
+  main { max-width: 1000px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { font-size: 1.75rem; margin: 0 0 4px; letter-spacing: -.01em; }
+  .muted { color: var(--muted); font-size: .875rem; }
+  .head { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; }
+  .btn {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 999px;
+    background: var(--accent); color: var(--on-accent); font-weight: 600; text-decoration: none;
+  }
+  .btn:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { font-size: .875rem; color: var(--muted); font-weight: 600; }
+  tr:last-child td { border-bottom: 0; }
+  td.date { font-variant-numeric: tabular-nums; color: var(--muted); font-size: .875rem; }
+  .empty { padding: 32px 16px; text-align: center; color: var(--muted); }
+  .count { display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: .875rem; font-weight: 600; vertical-align: middle; }
+</style>
+</head>
+<body>
+<main>
+  <div class="head">
+    <div>
+      <h1>Pilot sign-ups <span class="count">{{ signups|length }} {{ "person" if signups|length == 1 else "people" }}</span></h1>
+      <p class="muted">Personal data: keep this list inside approved university systems and delete it when the pilot ends.</p>
+    </div>
+    {% if signups %}<a class="btn" href="{{ url_for('parti.export_signups') }}">Download CSV</a>{% endif %}
+  </div>
+  <div class="card">
+    {% if signups %}
+    <table>
+      <thead>
+        <tr><th scope="col">Name</th><th scope="col">School</th><th scope="col">Email</th><th scope="col">Signed up (UTC)</th></tr>
+      </thead>
+      <tbody>
+        {% for s in signups %}
+        <tr><td>{{ s.name }}</td><td>{{ s.school }}</td><td>{{ s.email }}</td><td class="date">{{ s.created_at[:16]|replace("T", " ") }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No sign-ups yet. When someone submits the pilot form, they appear here.</p>
+    {% endif %}
+  </div>
+  <p class="muted"><a href="{{ url_for('parti.index') }}">Back to Parti</a></p>
+</main>
+</body>
+</html>
