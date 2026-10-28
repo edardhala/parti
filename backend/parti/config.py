@@ -1,17 +1,22 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import AliasChoices, Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     """Configuration from environment variables prefixed with PARTI_ (or a .env file)."""
 
-    model_config = SettingsConfigDict(env_prefix="PARTI_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_prefix="PARTI_", env_file=".env", extra="ignore", populate_by_name=True
+    )
 
     env: Literal["development", "test", "production"] = "development"
-    database_url: str = "postgresql+psycopg://parti@127.0.0.1:5432/parti"
+    database_url: str = Field(
+        default="postgresql+psycopg://parti@127.0.0.1:5432/parti",
+        validation_alias=AliasChoices("PARTI_DATABASE_URL", "DATABASE_URL"),
+    )
     secret_key: str = Field(default="dev-only-change-me", min_length=16)
     base_url: str = "http://127.0.0.1:8000"
 
@@ -34,6 +39,14 @@ class Settings(BaseSettings):
     smtp_username: str | None = None
     smtp_password: str | None = None
     smtp_starttls: bool = True
+
+    @field_validator("database_url")
+    @classmethod
+    def _psycopg_driver(cls, url: str) -> str:
+        for prefix in ("postgres://", "postgresql://"):
+            if url.startswith(prefix):
+                return "postgresql+psycopg://" + url[len(prefix) :]
+        return url
 
     @model_validator(mode="after")
     def _no_dev_secrets_in_production(self) -> "Settings":

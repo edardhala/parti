@@ -13,7 +13,7 @@ _engines: dict[str, Engine] = {}
 
 def get_engine(url: str) -> Engine:
     if url not in _engines:
-        _engines[url] = create_engine(url, pool_pre_ping=True)
+        _engines[url] = create_engine(url, pool_pre_ping=True, connect_args={"prepare_threshold": None})
     return _engines[url]
 
 

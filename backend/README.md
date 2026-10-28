@@ -102,6 +102,29 @@ stop the per-sign-up emails, and run the summary from cron, e.g. every day at 8:
 It lists sign-ups from the last 24 hours (`--hours` to change) and sends nothing
 when there are none.
 
+## Deploy on Vercel
+
+Project settings: **Root Directory** `backend`. Vercel finds the app through
+`[tool.vercel] entrypoint = "parti.asgi:app"` in `pyproject.toml`.
+
+1. Add a Postgres database (Storage tab → Neon), in an EU region. It sets
+   `DATABASE_URL`, which Parti reads directly.
+2. Create the tables and demo data once, from your machine, with that URL:
+   ```sh
+   DATABASE_URL="postgres://..." alembic upgrade head
+   DATABASE_URL="postgres://..." python -m parti.cli seed
+   ```
+   Re-run `alembic upgrade head` whenever a new migration is added.
+3. Environment variables:
+   - `PARTI_DEMO_USER_EMAIL=professor@demo.example.edu` makes the dashboard
+     read and write the database, but anyone with the link can then change
+     the demo grades and notes. Without it, the dashboard shows built-in
+     sample data and nothing it does is saved; pilot sign-ups are saved either way.
+   - `PARTI_NOTIFY_TO` and `PARTI_SMTP_*` for sign-up emails (see above).
+
+The site is public. The pilot form collects real names and emails, so add a
+privacy notice before sharing the link.
+
 ## Tests
 
 ```sh
