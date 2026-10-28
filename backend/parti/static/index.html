@@ -663,6 +663,7 @@ function depthBar(s) {
 function avatar(s) { return `<span class="avatar" aria-hidden="true">${esc(initials(s))}</span>`; }
 
 const api = {
+  served: location.protocol.startsWith("http"),
   online: false,
   loadError: "",
   async call(method, path, body) {
@@ -736,7 +737,7 @@ $("#pilot-form").addEventListener("submit", async e => {
   if (firstBad) { fields[firstBad[0]].el().focus(); return; }
   const name = $("#f-name").value.trim(), school = $("#f-school").value.trim(), email = $("#f-email").value.trim();
   const submit = $("#pilot-form button[type=submit]"), formErr = $("#e-form");
-  if (api.online) {
+  if (api.served) {
     submit.disabled = true;
     try {
       await api.call("POST", "/api/signups", { name, school, email });
@@ -1232,7 +1233,7 @@ document.addEventListener("keydown", e => {
 document.addEventListener("click", e => { if (!tip.hidden && !e.target.closest(".tip-wrap")) showTip(false); });
 
 async function boot() {
-  if (location.protocol.startsWith("http")) {
+  if (api.served) {
     try {
       const d = await api.call("GET", "/api/dashboard");
       DATA.session = { ...DATA.session, ...d.session };
