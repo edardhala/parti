@@ -35,6 +35,9 @@ include = ["parti*"]
 [tool.setuptools.package-data]
 parti = ["templates/*.html", "static/*.html"]
 
+[tool.vercel]
+entrypoint = "parti.asgi:app"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--cov=parti --cov-report=term-missing --cov-fail-under=85"

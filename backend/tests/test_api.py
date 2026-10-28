@@ -255,6 +255,24 @@ def test_audit_log_is_append_only(db: Session, client: TestClient) -> None:
     db.rollback()
 
 
+@pytest.mark.parametrize(
+    "url",
+    ["postgres://u:p@host.example/db?sslmode=require", "postgresql://u:p@host.example/db?sslmode=require"],
+)
+def test_hosted_database_urls_use_psycopg(url: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("PARTI_DATABASE_URL", raising=False)
+    monkeypatch.setenv("DATABASE_URL", url)
+    assert Settings(_env_file=None).database_url == "postgresql+psycopg://u:p@host.example/db?sslmode=require"
+
+
+def test_asgi_module_exposes_the_app() -> None:
+    from fastapi import FastAPI
+
+    from parti.asgi import app
+
+    assert isinstance(app, FastAPI)
+
+
 def test_demo_user_is_refused_in_production() -> None:
     with pytest.raises(ValueError, match="DEMO_USER"):
         Settings(
