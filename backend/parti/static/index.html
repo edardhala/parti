@@ -1,0 +1,1260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>Parti Prototype</title>
+<style>
+:root{
+  --accent:#4338CA; --accent-hover:#3730A3; --accent-soft:#EEF2FF; --accent-ink:#312E81;
+  --ink:#111827; --text:#1F2937; --muted:#4B5563; --line:#E5E7EB; --bg:#F8FAFC; --surface:#FFFFFF;
+  --green:#166534; --green-bg:#DCFCE7; --green-row:#F0FDF4; --green-line:#16A34A;
+  --yellow:#854D0E; --yellow-bg:#FEF9C3; --yellow-line:#CA8A04;
+  --gray:#374151; --gray-bg:#F3F4F6;
+  --red:#B91C1C;
+  --radius:16px; --radius-sm:10px;
+  --shadow:0 1px 2px rgba(17,24,39,.04),0 8px 24px rgba(17,24,39,.06);
+  --fs-body:1rem; --fs-small:.875rem;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:400 var(--fs-body)/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;padding-bottom:56px}
+h1,h2,h3{color:var(--ink);line-height:1.2;margin:0 0 .5em;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,4vw + 1rem,3.25rem);font-weight:800}
+h2{font-size:clamp(1.5rem,1.5vw + 1rem,2rem);font-weight:750}
+h3{font-size:1.125rem;font-weight:700}
+p{margin:0 0 1em}
+small,.small{font-size:var(--fs-small)}
+.muted{color:var(--muted)}
+a{color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.wrap{max-width:1200px;margin:0 auto;padding:0 16px}
+@media (min-width:768px){.wrap{padding:0 32px}}
+[hidden]{display:none!important}
+svg.i{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border-radius:999px;border:1px solid transparent;font-weight:600;cursor:pointer;text-decoration:none;transition:background .15s,border-color .15s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-secondary{background:var(--surface);color:var(--accent-ink);border-color:#C7D2FE}
+.btn-secondary:hover{background:var(--accent-soft)}
+.btn-ghost{background:transparent;color:var(--text);border-color:var(--line)}
+.btn-ghost:hover{background:var(--gray-bg)}
+.linkbtn{background:none;border:0;padding:0 4px;min-height:44px;color:var(--accent);text-decoration:underline;cursor:pointer;font-weight:600}
+
+.site-header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--line)}
+.site-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:64px}
+.logo{font-size:1.5rem;font-weight:800;color:var(--ink);letter-spacing:-.03em;display:flex;align-items:center;gap:6px}
+.logo-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);display:inline-block}
+.seg{display:inline-flex;padding:3px;background:var(--gray-bg);border:1px solid var(--line);border-radius:999px}
+.seg button{min-height:44px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:var(--muted);font-size:var(--fs-small);font-weight:600;cursor:pointer;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff;box-shadow:0 1px 3px rgba(17,24,39,.2)}
+.seg button[aria-pressed="false"]:hover{color:var(--ink)}
+@media (min-width:768px){.seg button{padding:0 18px}}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+@media (min-width:768px){.card{padding:24px}}
+.section{padding:56px 0}
+@media (min-width:768px){.section{padding:80px 0}}
+.eyebrow{display:inline-block;font-size:var(--fs-small);font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.section-head{max-width:640px;margin-bottom:32px}
+.grid{display:grid;gap:16px}
+@media (min-width:768px){.grid-3{grid-template-columns:repeat(3,1fr)}.grid-2{grid-template-columns:repeat(2,1fr)}}
+
+.hero{padding:48px 0 40px;background:linear-gradient(180deg,#fff, var(--bg))}
+.hero .wrap{display:grid;gap:40px;align-items:center}
+@media (min-width:960px){.hero{padding:88px 0 72px}.hero .wrap{grid-template-columns:1.15fr .85fr}}
+.hero p.lead{font-size:1.125rem;color:var(--muted);max-width:560px}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+.preview{padding:20px}
+.preview-row{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+.preview-row:first-of-type{border-top:0}
+.preview-row p{margin:0;font-size:var(--fs-small)}
+
+blockquote{margin:0}
+.quote p{font-size:1.125rem;color:var(--ink);font-weight:500}
+.quote p::before{content:"“";color:var(--accent);font-size:2rem;line-height:0;vertical-align:-.35em;margin-right:2px}
+.role{display:inline-block;font-size:var(--fs-small);font-weight:600;padding:2px 10px;border-radius:999px;background:var(--gray-bg);color:var(--gray)}
+.role.prof{background:var(--accent-soft);color:var(--accent-ink)}
+
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:16px;counter-reset:step}
+@media (min-width:900px){.steps{grid-template-columns:repeat(3,1fr)}}
+.steps li{counter-increment:step}
+.steps li::before{content:counter(step);display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;margin-bottom:16px}
+.steps p{margin:0;color:var(--muted)}
+.steps strong{color:var(--ink)}
+
+.cmp h3{display:flex;align-items:center;gap:8px}
+.cmp ul{list-style:none;padding:0;margin:0}
+.cmp li{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.cmp li:first-child{border-top:0}
+.cmp .yes svg{color:var(--green-line)}
+.cmp .no svg{color:var(--red)}
+
+.privacy{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+@media (min-width:768px){.privacy{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:1100px){.privacy{grid-template-columns:repeat(5,1fr)}}
+.privacy li{display:flex;flex-direction:column;gap:12px}
+.privacy .ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.privacy-note{margin-top:24px;font-weight:600;color:var(--ink);display:flex;gap:8px;align-items:center}
+
+.pilot{max-width:560px}
+.field{margin-bottom:18px}
+.field label{display:block;font-weight:600;margin-bottom:6px;color:var(--ink)}
+.field .req{color:var(--muted);font-weight:400;font-size:var(--fs-small)}
+input[type=text],input[type=email],input[type=search],input[type=number],select,textarea{width:100%;min-height:44px;padding:10px 12px;border:1px solid #9CA3AF;border-radius:var(--radius-sm);background:#fff}
+textarea{min-height:96px;resize:vertical}
+input[aria-invalid=true]{border-color:var(--red);border-width:2px}
+.err{display:flex;gap:6px;align-items:center;color:var(--red);font-size:var(--fs-small);margin-top:6px;font-weight:600}
+.err svg{width:16px;height:16px}
+.thanks{display:flex;gap:12px;align-items:flex-start}
+.thanks svg{color:var(--green-line);width:28px;height:28px}
+.thanks p{font-size:1.125rem;color:var(--ink);font-weight:600;margin:0}
+
+.dash{padding:24px 0 48px}
+.session-head{display:grid;gap:16px;margin-bottom:20px}
+@media (min-width:900px){.session-head{grid-template-columns:1fr 280px;align-items:end}}
+.session-head h1{font-size:clamp(1.375rem,1.2vw + 1rem,1.875rem);margin-bottom:8px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-small);font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.badge svg{width:16px;height:16px}
+.badge-source{background:var(--accent-soft);color:var(--accent-ink)}
+.badge-graded{background:var(--green-bg);color:var(--green)}
+.badge-borderline{background:var(--yellow-bg);color:var(--yellow)}
+.badge-none{background:var(--gray-bg);color:var(--gray)}
+.progress-label{display:flex;justify-content:space-between;font-size:var(--fs-small);font-weight:600;margin-bottom:6px}
+.progress{height:8px;border-radius:999px;background:var(--line);overflow:hidden}
+.progress span{display:block;height:100%;background:var(--green-line);border-radius:999px;transition:width .3s}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.tabs button{min-height:44px;padding:0 16px;border:0;background:none;border-bottom:3px solid transparent;margin-bottom:-1px;font-weight:600;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected=true]{color:var(--accent-ink);border-bottom-color:var(--accent)}
+
+.insights{display:grid;gap:16px;margin-bottom:20px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.stat .num{font-size:1.75rem;font-weight:800;color:var(--ink);line-height:1.1}
+.stat .lbl{font-size:var(--fs-small);color:var(--muted)}
+.notice{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:var(--radius-sm);font-size:var(--fs-small);font-weight:500}
+.notice svg{margin-top:1px}
+.notice-warn{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-line)}
+.notice-info{background:var(--accent-soft);color:var(--accent-ink);border:1px solid #C7D2FE}
+@media (min-width:900px){.insights{grid-template-columns:auto 1fr;align-items:center}.stats{grid-template-columns:repeat(2,minmax(160px,auto));gap:32px}}
+
+.filters{display:grid;gap:12px;margin-bottom:16px}
+@media (min-width:768px){.filters{grid-template-columns:1fr auto auto 220px;align-items:end}}
+.filters label{font-size:var(--fs-small);font-weight:600;display:block;margin-bottom:4px}
+.switch{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 14px 0 8px;border:1px solid var(--line);border-radius:999px;background:var(--surface);cursor:pointer;font-weight:600;font-size:var(--fs-small);white-space:nowrap}
+.switch .track{width:36px;height:22px;border-radius:999px;background:#9CA3AF;position:relative;transition:background .15s;flex:none}
+.switch .track::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch[aria-checked=true]{border-color:#A5B4FC;background:var(--accent-soft);color:var(--accent-ink)}
+.switch[aria-checked=true] .track{background:var(--accent)}
+.switch[aria-checked=true] .track::after{transform:translateX(14px)}
+.switch-row{display:flex;flex-wrap:wrap;gap:8px}
+.filters .switch-row{display:contents}
+
+.table-card{padding:0;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{font-size:var(--fs-small);font-weight:700;color:var(--muted);text-align:left;padding:12px 16px;background:#FAFAFB;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody th,tbody td{padding:14px 16px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle;font-weight:400}
+tbody tr{cursor:pointer;transition:background .12s}
+tbody tr:hover{background:#FAFAFF}
+tbody tr:last-child th,tbody tr:last-child td{border-bottom:0}
+tr.is-graded{background:var(--green-row)}
+tr.is-graded:hover{background:#E7F9EE}
+tr.is-graded > th{box-shadow:inset 4px 0 0 var(--green-line)}
+td.num{font-variant-numeric:tabular-nums;font-weight:600}
+.who{display:flex;align-items:center;gap:12px}
+.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-ink);font-weight:700;font-size:var(--fs-small);flex:none}
+.name-btn{background:none;border:0;padding:0;min-height:44px;font-weight:600;color:var(--ink);cursor:pointer;text-align:left}
+.name-btn:hover{color:var(--accent);text-decoration:underline}
+.hint{font-size:var(--fs-small);color:var(--yellow);font-weight:600;margin-top:-8px}
+.depth{display:flex;align-items:center;gap:10px;min-width:120px}
+.bar{flex:1;height:6px;border-radius:999px;background:var(--line);overflow:hidden;max-width:96px}
+.bar span{display:block;height:100%;background:var(--accent);border-radius:999px}
+.depth-num{font-variant-numeric:tabular-nums;font-size:var(--fs-small);font-weight:600;width:2ch;text-align:right}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:var(--fs-small);padding:2px 10px;border-radius:999px;background:var(--gray-bg);color:var(--gray);white-space:nowrap}
+.tip-wrap{position:relative;display:inline-flex;align-items:center;gap:2px}
+.tip-btn{width:28px;height:28px;border-radius:50%;border:0;background:none;color:var(--muted);cursor:help;display:inline-grid;place-items:center;position:relative}
+.tip-btn::before{content:"";position:absolute;inset:-8px}
+.tip-btn svg{width:16px;height:16px}
+.tooltip{position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);width:240px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--ink);color:#fff;font-weight:400;font-size:var(--fs-small);white-space:normal;z-index:5;box-shadow:var(--shadow)}
+.empty{padding:32px 16px;text-align:center;color:var(--muted)}
+
+.cards{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+@media (min-width:600px){.cards{grid-template-columns:1fr 1fr}}
+.srow{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;cursor:pointer}
+.srow.is-graded{background:var(--green-row);border-left:4px solid var(--green-line)}
+.srow-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.srow dl{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;margin:12px 0}
+.srow dt{font-size:var(--fs-small);color:var(--muted)}
+.srow dd{margin:0;font-weight:600}
+.view-table{display:none}
+@media (min-width:900px){.view-table{display:block}.view-cards{display:none}}
+
+.summary{max-width:760px}
+.ai-label{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:var(--fs-small);color:var(--muted);margin-bottom:16px}
+.ai-label .ok{color:var(--green);font-weight:600;display:inline-flex;gap:4px;align-items:center}
+.ai-label .pending{color:var(--yellow);font-weight:600}
+.summary ul{padding-left:1.25em;margin:0 0 20px}
+.summary li{margin-bottom:8px}
+.summary-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:16px 0 24px}
+
+.backdrop{position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:40;opacity:0;transition:opacity .2s}
+.backdrop.show{opacity:1}
+.panel{position:fixed;z-index:50;background:var(--surface);display:flex;flex-direction:column;box-shadow:0 -8px 40px rgba(17,24,39,.2);
+  left:0;right:0;bottom:0;height:calc(100dvh - 16px);border-radius:20px 20px 0 0;transform:translateY(100%);transition:transform .25s ease}
+.panel.open{transform:none}
+@media (min-width:768px){.panel{left:auto;top:0;height:100dvh;width:min(520px,92vw);border-radius:20px 0 0 20px;transform:translateX(100%)}}
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.panel-head h2{font-size:1.375rem;margin:0 0 6px}
+.panel-head h2:focus{outline:none}
+.panel-body{overflow-y:auto;padding:20px;flex:1;overscroll-behavior:contain}
+.panel-body section{padding-bottom:24px;margin-bottom:24px;border-bottom:1px solid var(--line)}
+.panel-body section:last-child{border-bottom:0;margin-bottom:0}
+.iconbtn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer;flex:none}
+.iconbtn:hover{background:var(--gray-bg)}
+.mini-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.mini-stats > div{background:var(--bg);border-radius:var(--radius-sm);padding:10px;min-width:0;overflow-wrap:anywhere}
+.mini-stats .num{font-weight:800;font-size:1.125rem;color:var(--ink)}
+.mini-stats .lbl{font-size:var(--fs-small);color:var(--muted)}
+.timeline{list-style:none;margin:0;padding:0;border-left:2px solid var(--line);margin-left:6px}
+.timeline li{position:relative;padding:0 0 14px 18px}
+.timeline li::before{content:"";position:absolute;left:-7px;top:7px;width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--accent)}
+.timeline .meta{font-size:var(--fs-small);font-weight:700;color:var(--ink)}
+.timeline .meta .t{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:600}
+.timeline p{margin:0}
+.quick{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 12px}
+.quick button{min-height:44px;padding:0 14px;border-radius:999px;border:1px dashed #A5B4FC;background:var(--accent-soft);color:var(--accent-ink);font-size:var(--fs-small);font-weight:600;cursor:pointer}
+.quick button:hover{border-style:solid}
+.notes{list-style:none;padding:0;margin:16px 0 0;display:grid;gap:8px}
+.notes li{display:flex;gap:8px;justify-content:space-between;align-items:flex-start;background:var(--bg);border-radius:var(--radius-sm);padding:10px 4px 10px 12px}
+.notes p{margin:0}
+.notes time{font-size:var(--fs-small);color:var(--muted)}
+.grade-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.grade-row .field{margin:0;width:140px}
+.grade-current{font-size:var(--fs-small);margin:10px 0 0;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+
+.modal-wrap{position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:16px}
+.modal-wrap .backdrop{z-index:0;opacity:1}
+.modal{position:relative;z-index:1;width:min(560px,100%);max-height:calc(100dvh - 32px);overflow-y:auto;background:var(--surface);border-radius:20px;box-shadow:0 20px 60px rgba(17,24,39,.3);padding:24px}
+.modal h2{font-size:1.375rem}
+.modal h2:focus{outline:none}
+.letter{border:1px solid var(--line);border-radius:var(--radius);padding:20px;background:var(--bg);margin:16px 0}
+.letter h3{font-size:1rem;margin:18px 0 6px}
+.letter ul{margin:0;padding-left:1.2em}
+.letter .foot{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:var(--fs-small);color:var(--muted);display:flex;gap:6px;align-items:center}
+.modal-actions{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+
+.toasts{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:90;display:grid;gap:8px;width:max-content;max-width:calc(100vw - 32px)}
+.toast{background:var(--ink);color:#fff;padding:12px 16px;border-radius:12px;box-shadow:var(--shadow);font-weight:600;display:flex;gap:8px;align-items:center;animation:tin .2s ease}
+.toast svg{color:#86EFAC}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.proto-label{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:30;font-size:var(--fs-small);font-weight:600;color:var(--gray);background:rgba(255,255,255,.95);border:1px solid var(--line);padding:4px 12px;border-radius:999px;box-shadow:var(--shadow);white-space:nowrap}
+.site-footer{border-top:1px solid var(--line);padding:24px 0;color:var(--muted);font-size:var(--fs-small)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  <symbol id="i-video" viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m22 8-6 4 6 4z"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="m2 2 20 20"/></symbol>
+  <symbol id="i-text" viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/></symbol>
+  <symbol id="i-gavel" viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></symbol>
+</svg>
+
+<a href="#main" class="visually-hidden">Skip to content</a>
+
+<header class="site-header" id="site-header">
+  <div class="wrap">
+    <div class="logo"><span class="logo-dot" aria-hidden="true"></span>Parti</div>
+    <nav aria-label="Prototype views">
+      <div class="seg" role="group" aria-label="Choose view">
+        <button type="button" data-view="landing" aria-pressed="true">Landing</button>
+        <button type="button" data-view="dashboard" aria-pressed="false">Professor dashboard</button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+
+<div id="view-landing">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap">
+      <div>
+        <h1 id="hero-title">Participation grades without the guesswork</h1>
+        <p class="lead">Evidence for professors. Feedback for students. The professor always has the final say.</p>
+        <div class="hero-actions">
+          <button type="button" class="btn btn-primary" id="cta-join">Join the pilot</button>
+          <button type="button" class="btn btn-secondary" id="cta-dash">See the professor view</button>
+        </div>
+      </div>
+      <div class="card preview" aria-hidden="true">
+        <div class="small muted" style="font-weight:600;margin-bottom:8px">Session 7 · what Parti captured</div>
+        <div class="preview-row"><span class="avatar">AO</span><div><p><strong>10:42 · Insight</strong></p><p class="muted">Linked the case to last week's pricing model</p></div></div>
+        <div class="preview-row"><span class="avatar">LF</span><div><p><strong>10:50 · Question</strong></p><p class="muted">Asked whether customers would pay more for low-carbon batteries</p></div></div>
+        <div class="preview-row"><span class="avatar">LH</span><div><p><strong>11:20 · Builds on others</strong></p><p class="muted">Linked local opposition to the company's ESG reporting</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="problem-title">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">The problem</span>
+        <h2 id="problem-title">Participation is graded from memory</h2>
+        <p class="muted">That leaves students performing for attention and professors second-guessing themselves.</p>
+      </div>
+      <div class="grid grid-3">
+        <figure class="card quote" style="margin:0"><blockquote><p>Sometimes I speak just so the professor remembers I exist.</p></blockquote><figcaption><span class="role">Student</span></figcaption></figure>
+        <figure class="card quote" style="margin:0"><blockquote><p>I got 100% participation and I don't think I deserved it.</p></blockquote><figcaption><span class="role">Student</span></figcaption></figure>
+        <figure class="card quote" style="margin:0"><blockquote><p>When in doubt, I always go for the higher grade.</p></blockquote><figcaption><span class="role prof">Professor</span></figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:#fff;border-block:1px solid var(--line)" aria-labelledby="how-title">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">How it works</span>
+        <h2 id="how-title">Three steps, no extra work in class</h2>
+      </div>
+      <ol class="steps">
+        <li class="card"><h3>Join.</h3><p>Students join the class Zoom from their own laptop, logged in with their university account and the Parti extension. Speakers stay muted, so there's no echo.</p></li>
+        <li class="card"><h3>Capture.</h3><p>When a student speaks, Zoom attributes it to their account. Parti writes a one-line summary of the contribution and tags it <strong>Question</strong>, <strong>Insight</strong> or <strong>Builds on others</strong>. No audio or full transcript is kept.</p></li>
+        <li class="card"><h3>Review and share.</h3><p>The professor adds their own notes and sets every grade. Students see their progress during the term and get a class summary to study from.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="is-title">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Clear limits</span>
+        <h2 id="is-title">What Parti is, and what it isn't</h2>
+      </div>
+      <div class="grid grid-2">
+        <div class="card cmp yes">
+          <h3><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Parti does</h3>
+          <ul>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span>Report who contributed and what they said, in one line each</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span>Jog the professor's memory</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span>Give students feedback mid-term</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span>Produce a study summary</span></li>
+          </ul>
+        </div>
+        <div class="card cmp no">
+          <h3><svg class="i" aria-hidden="true"><use href="#i-x"/></svg>Parti doesn't</h3>
+          <ul>
+            <li><svg class="i" aria-hidden="true"><use href="#i-x"/></svg><span>Suggest or assign grades</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-x"/></svg><span>Record audio or video</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-x"/></svg><span>Recognize voices or faces (the camera only shows that a student is present)</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-x"/></svg><span>Rank students publicly</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:#fff;border-block:1px solid var(--line)" aria-labelledby="privacy-title">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Privacy first</span>
+        <h2 id="privacy-title">Built to collect as little as possible</h2>
+      </div>
+      <ul class="privacy">
+        <li class="card"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg></span><span>No voice or face recognition. Identity comes from the university login.</span></li>
+        <li class="card"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-text"/></svg></span><span>Only one-line summaries are kept, never audio.</span></li>
+        <li class="card"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-gavel"/></svg></span><span>The professor decides every grade.</span></li>
+        <li class="card"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg></span><span>Nothing is public. Students only see their own data.</span></li>
+        <li class="card"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-trash"/></svg></span><span>Everything is deleted at the end of term.</span></li>
+      </ul>
+      <p class="privacy-note"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg>Students are told exactly how Parti works before the first session.</p>
+    </div>
+  </section>
+
+  <section class="section" id="pilot" aria-labelledby="pilot-title">
+    <div class="wrap">
+      <div class="card pilot">
+        <span class="eyebrow">Pilot</span>
+        <h2 id="pilot-title">Join the pilot</h2>
+        <div id="pilot-area">
+          <p class="muted">Try Parti in one course this term. All fields are required.</p>
+          <form id="pilot-form" novalidate>
+            <div class="field">
+              <label for="f-name">Name</label>
+              <input type="text" id="f-name" name="name" autocomplete="name" required aria-describedby="e-name">
+              <div class="err" id="e-name" hidden></div>
+            </div>
+            <div class="field">
+              <label for="f-school">School</label>
+              <input type="text" id="f-school" name="school" autocomplete="organization" required aria-describedby="e-school">
+              <div class="err" id="e-school" hidden></div>
+            </div>
+            <div class="field">
+              <label for="f-email">Email</label>
+              <input type="email" id="f-email" name="email" autocomplete="email" required aria-describedby="e-email">
+              <div class="err" id="e-email" hidden></div>
+            </div>
+            <button type="submit" class="btn btn-primary">Join the pilot</button>
+            <div class="err" id="e-form" role="alert" hidden></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="view-dashboard" hidden>
+  <div class="wrap dash">
+    <div class="session-head">
+      <div>
+        <h1 id="session-title"></h1>
+        <span class="badge badge-source"><svg class="i" aria-hidden="true"><use href="#i-video"/></svg>Captured via Zoom</span>
+      </div>
+      <div>
+        <div class="progress-label"><span id="progress-text"></span></div>
+        <div class="progress" role="progressbar" id="progress" aria-label="Grading progress" aria-valuemin="0"><span id="progress-fill"></span></div>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Session views">
+      <button type="button" role="tab" id="tab-students" aria-controls="panel-students" aria-selected="true">Students</button>
+      <button type="button" role="tab" id="tab-summary" aria-controls="panel-summary" aria-selected="false" tabindex="-1">Class summary</button>
+    </div>
+
+    <div id="load-error" class="notice notice-warn" style="margin-bottom:16px" role="alert" hidden></div>
+
+    <div role="tabpanel" id="panel-students" aria-labelledby="tab-students">
+      <section class="card insights" aria-labelledby="insights-title">
+        <h2 id="insights-title" class="visually-hidden">Session insights</h2>
+        <div class="stats" id="stats"></div>
+        <div id="balance"></div>
+      </section>
+
+      <div class="filters" role="search" aria-label="Filter students">
+        <div>
+          <label for="q">Search by name</label>
+          <input type="search" id="q" placeholder="e.g. Amara" autocomplete="off">
+        </div>
+        <div class="switch-row">
+          <button type="button" class="switch" role="switch" aria-checked="false" id="sw-quiet"><span class="track" aria-hidden="true"></span>Show quiet students</button>
+          <button type="button" class="switch" role="switch" aria-checked="false" id="sw-border"><span class="track" aria-hidden="true"></span>Borderline only</button>
+        </div>
+        <div>
+          <label for="sort">Sort by</label>
+          <select id="sort">
+            <option value="name">Name</option>
+            <option value="contributions">Contributions</option>
+            <option value="depth">Contribution depth</option>
+          </select>
+        </div>
+      </div>
+      <div id="quiet-banner" class="notice notice-info" style="margin-bottom:16px" hidden><svg class="i" aria-hidden="true"><use href="#i-info"/></svg><span>Check in after class or invite a written contribution.</span></div>
+      <p class="visually-hidden" id="result-count" aria-live="polite"></p>
+
+      <div class="view-table card table-card">
+        <table>
+          <caption class="visually-hidden">Students in this session. Select a name to open their evidence.</caption>
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Contributions</th>
+              <th scope="col">
+                <span class="tip-wrap">Contribution depth
+                  <button type="button" class="tip-btn" aria-describedby="tip-depth" aria-label="What is contribution depth?" id="tip-btn"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg></button>
+                  <span role="tooltip" id="tip-depth" class="tooltip" hidden>How substantive contributions were, based on their summaries. Not a grade.</span>
+                </span>
+              </th>
+              <th scope="col">Tags</th>
+              <th scope="col">Last contribution</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <ul class="view-cards cards" id="cards" aria-label="Students"></ul>
+    </div>
+
+    <div role="tabpanel" id="panel-summary" aria-labelledby="tab-summary" hidden>
+      <article class="card summary" id="summary"></article>
+    </div>
+  </div>
+</div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">Parti is a concept prototype. No data leaves this page.</div>
+</footer>
+<div class="proto-label">Prototype · sample data only</div>
+
+<div class="backdrop" id="panel-backdrop" hidden></div>
+<aside class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="p-name" hidden></aside>
+
+<div class="modal-wrap" id="modal-wrap" hidden>
+  <div class="backdrop" id="modal-backdrop"></div>
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="m-title"></div>
+</div>
+
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+const DATA = {
+  session: { course: "Strategy & Society", number: 7, date: "14 Oct 2026", source: "Zoom", caseCompany: "Lumora Energy" },
+  types: { I: "Insight", Q: "Question", B: "Builds on others" },
+  students: [
+    { id: "s01", name: "Amara Okafor", grade: 9, contributions: [
+      ["10:04","I",82,"Framed Lumora's delay as a capacity problem, not a demand problem"],
+      ["10:18","B",70,"Built on a classmate's point by adding supplier lock-in as a switching cost"],
+      ["10:31","Q",64,"Asked how regulators would treat Lumora's new recycling claims"],
+      ["10:42","I",88,"Linked the case to last week's pricing model"],
+      ["10:55","I",79,"Argued the cost advantage disappears once competitors reach scale"],
+      ["11:05","Q",66,"Asked whether the CEO's incentives explained the delay"],
+      ["11:16","B",72,"Extended the stakeholder map to include municipal grid operators"],
+      ["11:27","I",85,"Proposed staging the launch by country to protect margins"] ] },
+    { id: "s02", name: "Lucas Ferreira", grade: 8, contributions: [
+      ["10:06","Q",58,"Asked what share of revenue depends on the Nordic market"],
+      ["10:15","I",76,"Identified long-term supply contracts as Lumora's main competitive advantage"],
+      ["10:27","B",66,"Agreed with a classmate and added that limited capacity weakens pricing power"],
+      ["10:39","I",74,"Compared Lumora's premium pricing to a luxury positioning strategy"],
+      ["10:50","Q",55,"Asked whether customers would pay more for verified low-carbon batteries"],
+      ["11:02","B",68,"Connected a classmate's ESG point to investor pressure"],
+      ["11:14","I",80,"Argued that delaying protects the brand more than rushing a weak launch"],
+      ["11:24","Q",52,"Asked how the delay affects the sales team's targets"] ] },
+    { id: "s03", name: "Mei Lin Zhang", first: "Mei Lin", grade: 8.5, contributions: [
+      ["10:09","I",84,"Argued ESG reporting is becoming a licence to operate, not a differentiator"],
+      ["10:21","Q",62,"Asked how Lumora measures the carbon footprint of its supply chain"],
+      ["10:35","B",71,"Added that unions are a stakeholder the case overlooks"],
+      ["10:47","I",86,"Showed the low-carbon premium only holds if competitors can't copy the certification"],
+      ["11:00","B",69,"Built on the pricing discussion with a tiered pricing option"],
+      ["11:12","I",78,"Argued that transparent communication about the delay protects investor trust"],
+      ["11:22","Q",54,"Asked what a credible 2030 ESG target would look like"] ] },
+    { id: "s04", name: "Rohan Mehta", grade: 7.5, contributions: [
+      ["10:12","Q",50,"Asked how large the price gap is versus Asian competitors"],
+      ["10:44","I",72,"Pointed out that vertical integration reduces exposure to lithium prices"],
+      ["11:10","B",61,"Added that the delay gives competitors a window to lock in customers"] ] },
+    { id: "s05", name: "Sofia Rossi", grade: 7, contributions: [
+      ["10:24","I",68,"Suggested framing the delay as a quality commitment to customers"],
+      ["11:18","Q",49,"Asked how employees were told about the delay"] ] },
+    { id: "s06", name: "Tomás Herrera", grade: 6.5, contributions: [
+      ["10:29","B",58,"Built on the supplier discussion with a dual-sourcing idea"],
+      ["10:58","Q",46,"Asked whether the case figures include government subsidies"] ] },
+    { id: "s07", name: "Leila Haddad", grade: 7, contributions: [
+      ["10:37","I",74,"Argued that community opposition to the new plant is the real risk"],
+      ["11:20","B",60,"Linked local opposition to the company's ESG reporting"] ] },
+    { id: "s08", name: "Jonas Becker", grade: 6, contributions: [
+      ["10:33","Q",44,"Asked what competitors' margins look like"],
+      ["11:06","I",63,"Noted that the premium price only works with strong after-sales service"] ] },
+    { id: "s09", name: "Aiko Tanaka", contributions: [
+      ["10:52","I",70,"Proposed partnering with a carmaker to share the expansion risk"],
+      ["11:25","B",57,"Added that a partner would also bring distribution channels"] ] },
+    { id: "s10", name: "Kwame Mensah", borderline: true, contributions: [
+      ["10:46","Q",30,"Asked what cost leadership means in this case"],
+      ["11:13","I",66,"Pointed out that the delay frees cash for R&D"] ] },
+    { id: "s11", name: "Ingrid Larsen", borderline: true, contributions: [
+      ["11:03","B",38,"Agreed with the previous point about investor pressure"] ] },
+    { id: "s12", name: "Diego Álvarez", borderline: true, contributions: [
+      ["10:20","I",62,"Suggested Lumora sell to energy storage before cars"],
+      ["11:28","Q",28,"Asked how the case relates to the midterm"] ] },
+    { id: "s13", name: "Nadia Petrova", lastContribution: "30 Sep 2026", contributions: [] },
+    { id: "s14", name: "Yusuf Demir", lastContribution: null, contributions: [] },
+    { id: "s15", name: "Chloé Martin", lastContribution: "7 Oct 2026", contributions: [] }
+  ],
+  quickNotes: ["Shared insight after class", "Arrived late", "On phone", "Helped a classmate", "Strong written follow-up"],
+  summary: {
+    points: [
+      "Lumora's delay was framed as a capacity problem rather than weak demand. A student pointed out that limited capacity also limits pricing power.",
+      "Long-term supply contracts and vertical integration were named as the main sources of competitive advantage, though one student argued the cost advantage fades once competitors reach scale.",
+      "On pricing, the class linked the case to last week's pricing model and compared premium positioning with a tiered option. Several students noted the premium only works with strong after-sales service.",
+      "ESG was discussed as a licence to operate rather than a differentiator: the low-carbon premium lasts only if competitors can't copy the certification.",
+      "The stakeholder map grew beyond investors to include unions, municipal grid operators and local communities opposing the new plant.",
+      "Options raised: staging the launch by country, partnering with a carmaker to share risk, or selling to energy storage before cars."
+    ],
+    questions: [
+      "Did the CEO's incentives contribute to the delay?",
+      "Would customers pay more for verified low-carbon batteries?"
+    ],
+    reading: "Michael E. Porter, “What Is Strategy?”, Harvard Business Review (1996): useful for separating operational effectiveness from Lumora's strategic positioning."
+  }
+};
+
+const state = {
+  view: "landing",
+  tab: "students",
+  search: "",
+  quiet: false,
+  borderline: false,
+  sort: "name",
+  grades: Object.fromEntries(DATA.students.filter(s => s.grade != null).map(s => [s.id, s.grade])),
+  notes: {},
+  selected: null,
+  reviewed: false
+};
+
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const icon = (id, cls = "i") => `<svg class="${cls}" aria-hidden="true"><use href="#i-${id}"/></svg>`;
+const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const byId = id => DATA.students.find(s => s.id === id);
+const firstName = s => s.first || s.name.split(" ")[0];
+const initials = s => s.name.split(" ").filter(Boolean).map(p => p[0]).slice(0, 2).join("").toUpperCase();
+const lowerFirst = t => t.charAt(0).toLowerCase() + t.slice(1);
+const fmtGrade = g => (g % 1 ? g.toFixed(1) : String(g));
+const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+
+function contribs(s) {
+  return s.contributions.map(([time, type, depth, summary]) => ({ time, type, depth, summary }))
+    .sort((a, b) => a.time.localeCompare(b.time));
+}
+function depthOf(s) {
+  const c = s.contributions;
+  return c.length ? Math.round(c.reduce((a, x) => a + x[2], 0) / c.length) : 0;
+}
+function tagCounts(s) {
+  const t = { I: 0, Q: 0, B: 0 };
+  s.contributions.forEach(c => t[c[1]]++);
+  return t;
+}
+function lastOf(s) {
+  if (s.contributions.length) return DATA.session.date;
+  return s.lastContribution || "—";
+}
+function statusOf(s) {
+  const g = state.grades[s.id];
+  if (g != null) return { key: "graded", label: `Graded · ${fmtGrade(g)}`, icon: "check" };
+  if (s.borderline) return { key: "borderline", label: "Borderline", icon: "alert" };
+  if (!s.contributions.length) return { key: "none", label: "No contributions", icon: "minus" };
+  return null;
+}
+function badge(st) {
+  if (!st) return `<span class="visually-hidden">Not graded yet</span>`;
+  return `<span class="badge badge-${st.key}">${icon(st.icon)}${esc(st.label)}</span>`;
+}
+function chips(s) {
+  const t = tagCounts(s);
+  const out = ["I", "Q", "B"].filter(k => t[k]).map(k => `<span class="chip">${DATA.types[k]} ×${t[k]}</span>`);
+  return out.length ? `<div class="chips">${out.join("")}</div>` : `<span class="muted">—</span>`;
+}
+function depthBar(s) {
+  const d = depthOf(s);
+  return `<div class="depth"><span class="bar" aria-hidden="true"><span style="width:${d}%"></span></span><span class="depth-num">${d}</span><span class="visually-hidden"> out of 100</span></div>`;
+}
+function avatar(s) { return `<span class="avatar" aria-hidden="true">${esc(initials(s))}</span>`; }
+
+const api = {
+  online: false,
+  loadError: "",
+  async call(method, path, body) {
+    const res = await fetch(path, {
+      method,
+      headers: body ? { "Content-Type": "application/json" } : {},
+      body: body ? JSON.stringify(body) : undefined,
+      credentials: "same-origin"
+    });
+    if (!res.ok) {
+      let msg = `Something went wrong (error ${res.status}). Please try again.`;
+      try { const j = await res.json(); if (typeof j.detail === "string") msg = j.detail; } catch {}
+      const err = new Error(msg); err.status = res.status; throw err;
+    }
+    return res.status === 204 ? null : res.json();
+  }
+};
+const sessionPath = (studentId, rest) => `/api/sessions/${DATA.session.id}/students/${studentId}/${rest}`;
+const noteLabel = iso => new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+function showError(el, msg) {
+  el.innerHTML = `${icon("alert")}<span>${esc(msg)}</span>`;
+  el.hidden = false;
+}
+
+function toast(msg) {
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.innerHTML = `${icon("check")}<span>${esc(msg)}</span>`;
+  $("#toasts").appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+function setView(view) {
+  state.view = view;
+  $("#view-landing").hidden = view !== "landing";
+  $("#view-dashboard").hidden = view !== "dashboard";
+  $$(".seg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
+  window.scrollTo({ top: 0, behavior: "auto" });
+  if (view === "dashboard") renderDashboard();
+}
+$$(".seg button").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
+$("#cta-dash").addEventListener("click", () => { setView("dashboard"); $("#main").focus({ preventScroll: true }); });
+$("#cta-join").addEventListener("click", () => {
+  $("#pilot").scrollIntoView({ behavior: reduceMotion() ? "auto" : "smooth", block: "start" });
+  const f = $("#f-name");
+  if (f) f.focus({ preventScroll: true });
+});
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const fields = {
+  name: { el: () => $("#f-name"), err: "#e-name", check: v => v ? "" : "Enter your name." },
+  school: { el: () => $("#f-school"), err: "#e-school", check: v => v ? "" : "Enter your school." },
+  email: { el: () => $("#f-email"), err: "#e-email", check: v => !v ? "Enter your email address." : (EMAIL_RE.test(v) ? "" : "Enter an email in the format name@example.edu.") }
+};
+function validateField(key) {
+  const f = fields[key], input = f.el(), msg = f.check(input.value.trim()), err = $(f.err);
+  input.setAttribute("aria-invalid", msg ? "true" : "false");
+  err.hidden = !msg;
+  err.innerHTML = msg ? `${icon("alert")}<span>${esc(msg)}</span>` : "";
+  return !msg;
+}
+Object.keys(fields).forEach(k => {
+  const input = fields[k].el();
+  input.addEventListener("blur", () => { if (input.value || input.dataset.touched) validateField(k); input.dataset.touched = "1"; });
+  input.addEventListener("input", () => { if (input.getAttribute("aria-invalid") === "true") validateField(k); });
+});
+$("#pilot-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const results = Object.keys(fields).map(k => [k, validateField(k)]);
+  const firstBad = results.find(([, ok]) => !ok);
+  if (firstBad) { fields[firstBad[0]].el().focus(); return; }
+  const name = $("#f-name").value.trim(), school = $("#f-school").value.trim(), email = $("#f-email").value.trim();
+  const submit = $("#pilot-form button[type=submit]"), formErr = $("#e-form");
+  if (api.online) {
+    submit.disabled = true;
+    try {
+      await api.call("POST", "/api/signups", { name, school, email });
+    } catch (err) {
+      submit.disabled = false;
+      if (err.status === 422) { showError($("#e-email"), "Check this email address."); $("#f-email").setAttribute("aria-invalid", "true"); $("#f-email").focus(); }
+      else { showError(formErr, "We couldn't save your sign-up. Please try again."); submit.focus(); }
+      return;
+    }
+  }
+  $("#pilot-area").innerHTML = `<div class="thanks" tabindex="-1" id="thanks">${icon("check")}<p>Thanks, ${esc(name)}! We'll be in touch about the pilot at ${esc(school)}.</p></div>`;
+  $("#thanks").focus();
+});
+
+function renderDashboard() {
+  const S = DATA.session, n = DATA.students.length;
+  $("#session-title").textContent = `${S.course} · Session ${S.number} · ${S.date} · ${n} students`;
+  renderProgress();
+  renderInsights();
+  renderStudents();
+  renderSummary();
+}
+
+function renderProgress() {
+  const n = DATA.students.length;
+  const graded = DATA.students.filter(s => state.grades[s.id] != null).length;
+  $("#progress-text").textContent = `${graded} of ${n} graded`;
+  $("#progress-fill").style.width = `${(graded / n) * 100}%`;
+  const p = $("#progress");
+  p.setAttribute("aria-valuemax", n);
+  p.setAttribute("aria-valuenow", graded);
+  p.setAttribute("aria-valuetext", `${graded} of ${n} graded`);
+}
+
+function renderInsights() {
+  const counts = DATA.students.map(s => s.contributions.length);
+  const total = counts.reduce((a, b) => a + b, 0);
+  const spoke = counts.filter(c => c > 0).length;
+  const n = counts.length;
+  const pct = Math.round((spoke / n) * 100);
+  $("#stats").innerHTML = `
+    <div class="stat"><div class="num">${total}</div><div class="lbl">Total contributions</div></div>
+    <div class="stat"><div class="num">${pct}%</div><div class="lbl">Students who spoke (${spoke} of ${n})</div></div>`;
+  const top3 = [...counts].sort((a, b) => b - a).slice(0, 3).reduce((a, b) => a + b, 0);
+  const share = total ? top3 / total : 0;
+  $("#balance").innerHTML = share > 0.5
+    ? `<div class="notice notice-warn">${icon("alert")}<span><strong>Balance:</strong> 3 students made ${Math.round(share * 100)}% of today's contributions. Consider inviting other voices next session.</span></div>`
+    : "";
+}
+
+function visibleStudents() {
+  const q = state.search.trim().toLowerCase();
+  let list = DATA.students.filter(s => {
+    if (q && !s.name.toLowerCase().includes(q)) return false;
+    if (state.quiet && s.contributions.length !== 0) return false;
+    if (state.borderline && !(s.borderline && state.grades[s.id] == null)) return false;
+    return true;
+  });
+  const cmpName = (a, b) => a.name.localeCompare(b.name);
+  if (state.sort === "name") list.sort(cmpName);
+  if (state.sort === "contributions") list.sort((a, b) => b.contributions.length - a.contributions.length || cmpName(a, b));
+  if (state.sort === "depth") list.sort((a, b) => depthOf(b) - depthOf(a) || cmpName(a, b));
+  return list;
+}
+
+function nameBlock(s, st) {
+  return `<div class="who">${avatar(s)}<div>
+    <button type="button" class="name-btn" data-open="${s.id}" aria-haspopup="dialog">${esc(s.name)}</button>
+    ${st && st.key === "borderline" ? `<div class="hint">Review evidence before deciding</div>` : ""}
+  </div></div>`;
+}
+
+function renderStudents() {
+  const list = visibleStudents();
+  $("#quiet-banner").hidden = !state.quiet;
+  $("#result-count").textContent = `${plural(list.length, "student")} shown`;
+
+  $("#tbody").innerHTML = list.length ? list.map(s => {
+    const st = statusOf(s);
+    return `<tr data-id="${s.id}" class="${st && st.key === "graded" ? "is-graded" : ""}">
+      <th scope="row">${nameBlock(s, st)}</th>
+      <td class="num">${s.contributions.length}</td>
+      <td>${depthBar(s)}</td>
+      <td>${chips(s)}</td>
+      <td>${esc(lastOf(s))}</td>
+      <td>${badge(st)}</td>
+    </tr>`;
+  }).join("") : `<tr><td colspan="6" class="empty">No students match these filters.</td></tr>`;
+
+  $("#cards").innerHTML = list.length ? list.map(s => {
+    const st = statusOf(s);
+    return `<li class="srow ${st && st.key === "graded" ? "is-graded" : ""}" data-id="${s.id}">
+      <div class="srow-top">${nameBlock(s, st)}<div>${badge(st)}</div></div>
+      <dl>
+        <div><dt>Contributions</dt><dd>${s.contributions.length}</dd></div>
+        <div><dt>Contribution depth</dt><dd>${depthBar(s)}</dd></div>
+        <div><dt>Last contribution</dt><dd>${esc(lastOf(s))}</dd></div>
+      </dl>
+      ${chips(s)}
+    </li>`;
+  }).join("") : `<li class="empty card">No students match these filters.</li>`;
+}
+
+["#tbody", "#cards"].forEach(sel => $(sel).addEventListener("click", e => {
+  const row = e.target.closest("[data-id]");
+  if (row) openPanel(row.dataset.id);
+}));
+
+$("#q").addEventListener("input", e => { state.search = e.target.value; renderStudents(); });
+$("#sort").addEventListener("change", e => { state.sort = e.target.value; renderStudents(); });
+function bindSwitch(id, key) {
+  const b = $(id);
+  b.addEventListener("click", () => {
+    state[key] = !state[key];
+    b.setAttribute("aria-checked", String(state[key]));
+    renderStudents();
+  });
+}
+bindSwitch("#sw-quiet", "quiet");
+bindSwitch("#sw-border", "borderline");
+
+const tipBtn = $("#tip-btn"), tip = $("#tip-depth");
+const showTip = v => { tip.hidden = !v; };
+["mouseenter", "focus"].forEach(ev => tipBtn.addEventListener(ev, () => showTip(true)));
+["mouseleave", "blur"].forEach(ev => tipBtn.addEventListener(ev, () => showTip(false)));
+tipBtn.addEventListener("click", e => { e.stopPropagation(); showTip(tip.hidden); });
+
+const tabs = [$("#tab-students"), $("#tab-summary")];
+function setTab(name, focus) {
+  state.tab = name;
+  tabs.forEach(t => {
+    const on = t.id === `tab-${name}`;
+    t.setAttribute("aria-selected", String(on));
+    t.tabIndex = on ? 0 : -1;
+    $("#" + t.getAttribute("aria-controls")).hidden = !on;
+    if (on && focus) t.focus();
+  });
+}
+tabs.forEach((t, i) => {
+  t.addEventListener("click", () => setTab(t.id.replace("tab-", "")));
+  t.addEventListener("keydown", e => {
+    let j = null;
+    if (e.key === "ArrowRight") j = (i + 1) % tabs.length;
+    if (e.key === "ArrowLeft") j = (i - 1 + tabs.length) % tabs.length;
+    if (e.key === "Home") j = 0;
+    if (e.key === "End") j = tabs.length - 1;
+    if (j !== null) { e.preventDefault(); setTab(tabs[j].id.replace("tab-", ""), true); }
+  });
+});
+
+function summaryText() {
+  const S = DATA.summary;
+  return [
+    `Session ${DATA.session.number} — Key points`,
+    "",
+    ...S.points.map(p => `• ${p}`),
+    "",
+    "Open questions raised in class:",
+    ...S.questions.map(q => `• ${q}`),
+    "",
+    `Suggested reading: ${S.reading}`,
+    "",
+    `AI-generated from contribution summaries · ${state.reviewed ? "Reviewed by professor" : "Awaiting professor review"}`
+  ].join("\n");
+}
+function renderSummary() {
+  const S = DATA.summary;
+  if (!S) {
+    $("#summary").innerHTML = `<h2>Session ${DATA.session.number} — Key points</h2><p class="muted">There's no summary for this session yet.</p>`;
+    return;
+  }
+  $("#summary").innerHTML = `
+    <h2>Session ${DATA.session.number} — Key points</h2>
+    <p class="ai-label">AI-generated from contribution summaries ·
+      ${state.reviewed ? `<span class="ok">${icon("check")}Reviewed by professor</span>` : `<span class="pending">Awaiting professor review</span>`}</p>
+    <div class="summary-actions">
+      <button type="button" class="switch" role="switch" aria-checked="${state.reviewed}" id="sw-reviewed"><span class="track" aria-hidden="true"></span>Mark as reviewed</button>
+      <button type="button" class="btn btn-secondary" id="copy-summary">${icon("copy")}Copy summary</button>
+    </div>
+    <ul>${S.points.map(p => `<li>${esc(p)}</li>`).join("")}</ul>
+    <h3>Open questions raised in class</h3>
+    <ul>${S.questions.map(q => `<li>${esc(q)}</li>`).join("")}</ul>
+    <h3>Suggested reading</h3>
+    <p>${esc(S.reading)}</p>`;
+  $("#sw-reviewed").addEventListener("click", async () => {
+    const next = !state.reviewed;
+    if (api.online) {
+      try { await api.call("PUT", `/api/sessions/${DATA.session.id}/summary/review`, { reviewed: next }); }
+      catch (err) { toast(err.message); return; }
+    }
+    state.reviewed = next;
+    renderSummary();
+    $("#sw-reviewed").focus();
+    toast(state.reviewed ? "Summary marked as reviewed" : "Summary marked as not reviewed");
+  });
+  $("#copy-summary").addEventListener("click", copySummary);
+}
+async function copySummary() {
+  const text = summaryText();
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch {}
+    ta.remove();
+  }
+  toast("Summary copied");
+}
+
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+function trapFocus(container, e) {
+  if (e.key !== "Tab") return;
+  const f = $$(FOCUSABLE, container).filter(el => el.offsetParent !== null);
+  if (!f.length) return;
+  const first = f[0], last = f[f.length - 1], active = document.activeElement;
+  if (!f.includes(active)) { e.preventDefault(); (e.shiftKey ? last : first).focus(); return; }
+  if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
+}
+function setBackgroundInert(on) {
+  ["#site-header", "#main", ".site-footer", ".proto-label"].forEach(sel => { $(sel).inert = on; });
+}
+
+const panel = $("#panel"), panelBackdrop = $("#panel-backdrop");
+
+function openPanel(id) {
+  const s = byId(id);
+  if (!s) return;
+  state.selected = id;
+  panel.innerHTML = panelHTML(s);
+  panel.hidden = false; panelBackdrop.hidden = false;
+  setBackgroundInert(true);
+  document.body.style.overflow = "hidden";
+  requestAnimationFrame(() => {
+    panel.classList.add("open"); panelBackdrop.classList.add("show");
+    $("#p-name").focus();
+  });
+  bindPanel(s);
+}
+
+function closePanel() {
+  if (!state.selected) return;
+  const id = state.selected;
+  state.selected = null;
+  panel.classList.remove("open"); panelBackdrop.classList.remove("show");
+  const done = () => { if (state.selected) return; panel.hidden = true; panelBackdrop.hidden = true; panel.innerHTML = ""; };
+  if (reduceMotion()) done(); else setTimeout(done, 250);
+  setBackgroundInert(false);
+  document.body.style.overflow = "";
+  const target = $$(`[data-open="${id}"]`).find(el => el.offsetParent !== null);
+  if (target) target.focus();
+}
+
+function panelHeadHTML(s) {
+  const st = statusOf(s);
+  return `${badge(st) || ""}
+    <div class="mini-stats">
+      <div><div class="num">${s.contributions.length}</div><div class="lbl">Contributions</div></div>
+      <div><div class="num">${depthOf(s)}<span class="small muted">/100</span></div><div class="lbl">Depth</div></div>
+      <div><div class="num" style="font-size:1rem">${esc(lastOf(s))}</div><div class="lbl">Last contribution</div></div>
+    </div>
+    <div style="margin-top:12px">${chips(s)}</div>`;
+}
+
+function panelHTML(s) {
+  const c = contribs(s);
+  return `
+  <div class="panel-head">
+    <div style="flex:1;min-width:0">
+      <h2 id="p-name" tabindex="-1">${esc(s.name)}</h2>
+      <div id="p-head">${panelHeadHTML(s)}</div>
+    </div>
+    <button type="button" class="iconbtn" id="p-close" aria-label="Close student panel">${icon("x")}</button>
+  </div>
+  <div class="panel-body">
+    <section aria-labelledby="h-contrib">
+      <h3 id="h-contrib">Contributions this session</h3>
+      ${c.length ? `<ol class="timeline">${c.map(x => `<li><div class="meta"><span class="t">${esc(x.time)}</span> · ${DATA.types[x.type]}</div><p>${esc(x.summary)}</p></li>`).join("")}</ol>`
+                 : `<p class="muted">No spoken contributions this session.</p>`}
+    </section>
+
+    <section aria-labelledby="h-notes">
+      <h3 id="h-notes">Professor notes</h3>
+      <label for="note-text" class="visually-hidden">Note</label>
+      <textarea id="note-text" placeholder="What did you notice that Parti couldn't?" aria-describedby="note-err"></textarea>
+      <div class="quick" role="group" aria-label="Quick notes">
+        ${DATA.quickNotes.map(q => `<button type="button" data-quick="${esc(q)}">+ ${esc(q)}</button>`).join("")}
+      </div>
+      <div class="err" id="note-err" hidden></div>
+      <button type="button" class="btn btn-ghost" id="note-add">Add note</button>
+      <ul class="notes" id="notes" aria-label="Saved notes"></ul>
+    </section>
+
+    <section aria-labelledby="h-grade">
+      <h3 id="h-grade">Participation grade</h3>
+      <p class="small muted">Parti never suggests a grade. Enter your own, from 0 to 10 in steps of 0.5.</p>
+      <form id="grade-form" novalidate>
+        <div class="grade-row">
+          <div class="field">
+            <label for="grade">Grade (0–10)</label>
+            <input type="number" id="grade" min="0" max="10" step="0.5" inputmode="decimal" aria-describedby="grade-err" value="">
+          </div>
+          <button type="submit" class="btn btn-primary">Save grade</button>
+        </div>
+        <div class="err" id="grade-err" hidden></div>
+      </form>
+      <p class="grade-current" id="grade-current"></p>
+    </section>
+
+    <section aria-labelledby="h-fb">
+      <h3 id="h-fb">Mid-term feedback</h3>
+      <p class="small muted">See exactly what ${esc(firstName(s))} would receive before sending.</p>
+      <button type="button" class="btn btn-secondary" id="fb-open" aria-haspopup="dialog">${icon("eye")}Preview mid-term feedback</button>
+    </section>
+  </div>`;
+}
+
+function renderGradeCurrent(s) {
+  const g = state.grades[s.id];
+  $("#grade-current").innerHTML = g != null
+    ? `<span>Saved grade: <strong>${fmtGrade(g)}</strong></span><button type="button" class="linkbtn" id="grade-clear">Clear grade</button>`
+    : `<span class="muted">No grade saved yet.</span>`;
+  const clr = $("#grade-clear");
+  if (clr) clr.addEventListener("click", async () => {
+    if (api.online) {
+      try { await api.call("DELETE", sessionPath(s.id, "grade")); }
+      catch (err) { showError($("#grade-err"), err.message); return; }
+    }
+    delete state.grades[s.id];
+    afterGradeChange(s);
+    toast(`Grade cleared for ${s.name}.`);
+    $("#grade").focus();
+  });
+}
+
+function renderNotes(s) {
+  const list = state.notes[s.id] || [];
+  $("#notes").innerHTML = list.map(n => `
+    <li><div><p>${esc(n.text)}</p><time datetime="${esc(n.createdAt)}">${esc(noteLabel(n.createdAt))}</time></div>
+    <button type="button" class="iconbtn" style="border:0;background:none" data-del="${esc(n.id)}" aria-label="Delete note: ${esc(n.text.slice(0, 40))}">${icon("trash")}</button></li>`).join("");
+}
+
+function afterGradeChange(s) {
+  $("#p-head").innerHTML = panelHeadHTML(s);
+  renderGradeCurrent(s);
+  renderProgress();
+  renderStudents();
+}
+
+function bindPanel(s) {
+  $("#p-close").addEventListener("click", closePanel);
+  renderNotes(s);
+  renderGradeCurrent(s);
+
+  const ta = $("#note-text"), noteErr = $("#note-err");
+  $$("[data-quick]", panel).forEach(b => b.addEventListener("click", () => {
+    const v = ta.value.trim(), add = b.dataset.quick;
+    ta.value = v ? `${v}${/[.!?]$/.test(v) ? "" : "."} ${add}` : add;
+    noteErr.hidden = true;
+    ta.focus();
+  }));
+  $("#note-add").addEventListener("click", async () => {
+    const text = ta.value.trim();
+    if (!text) { showError(noteErr, "Write a note or pick a quick note first."); ta.focus(); return; }
+    let note = { id: `local-${Date.now()}`, text, createdAt: new Date().toISOString() };
+    if (api.online) {
+      try { note = await api.call("POST", sessionPath(s.id, "notes"), { body: text }); }
+      catch (err) { showError(noteErr, err.message); return; }
+    }
+    (state.notes[s.id] ||= []).push(note);
+    ta.value = ""; noteErr.hidden = true;
+    renderNotes(s);
+    toast("Note added");
+  });
+  $("#notes").addEventListener("click", async e => {
+    const b = e.target.closest("[data-del]");
+    if (!b) return;
+    const noteId = b.dataset.del;
+    if (api.online) {
+      try { await api.call("DELETE", `/api/notes/${noteId}`); }
+      catch (err) { showError(noteErr, err.message); return; }
+    }
+    state.notes[s.id] = state.notes[s.id].filter(n => n.id !== noteId);
+    renderNotes(s);
+    toast("Note deleted");
+    ta.focus();
+  });
+
+  $("#grade-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const input = $("#grade"), err = $("#grade-err"), raw = input.value.trim();
+    const v = Number(raw);
+    let msg = "";
+    if (raw === "") msg = "Enter a grade from 0 to 10.";
+    else if (!Number.isFinite(v) || v < 0 || v > 10) msg = "The grade must be between 0 and 10.";
+    else if (!Number.isInteger(v * 2)) msg = "Use steps of 0.5, for example 7 or 7.5.";
+    input.setAttribute("aria-invalid", msg ? "true" : "false");
+    err.hidden = !msg;
+    err.innerHTML = msg ? `${icon("alert")}<span>${msg}</span>` : "";
+    if (msg) { input.focus(); return; }
+    if (api.online) {
+      try { await api.call("PUT", sessionPath(s.id, "grade"), { value: v }); }
+      catch (ex) { showError(err, ex.message); input.focus(); return; }
+    }
+    state.grades[s.id] = v;
+    afterGradeChange(s);
+    toast(`Grade saved for ${s.name}.`);
+  });
+
+  $("#fb-open").addEventListener("click", () => openModal(s));
+}
+
+panelBackdrop.addEventListener("click", closePanel);
+panel.addEventListener("keydown", e => trapFocus(panel, e));
+
+function bandOf(g) {
+  if (g == null) return null;
+  if (g <= 4.5) return { name: "Developing", range: "0–4.5" };
+  if (g <= 7) return { name: "Solid", range: "5–7" };
+  return { name: "Strong", range: "7.5–10" };
+}
+function strengths(s) {
+  const c = contribs(s);
+  if (!c.length) return ["Your professor's notes and any written contributions also count, so nothing is lost by a quiet session."];
+  const t = tagCounts(s);
+  const best = [...c].sort((a, b) => b.depth - a.depth)[0];
+  const out = [best.depth >= 60
+    ? `Your strongest contribution (${DATA.types[best.type].toLowerCase()}): you ${lowerFirst(best.summary)}.`
+    : `You joined the discussion when you ${lowerFirst(best.summary)}.`];
+  if (t.B && best.type !== "B") out.push(`You built on classmates' ideas ${t.B === 1 ? "once" : t.B + " times"}, which keeps the discussion connected.`);
+  else if (t.Q && best.type !== "Q") out.push(`Your ${t.Q === 1 ? "question" : t.Q + " questions"} pushed the class to test assumptions in the case.`);
+  else if (t.I && best.type !== "I") out.push(`You also offered ${plural(t.I, "insight")} of your own.`);
+  return out;
+}
+function improvement(s) {
+  const c = s.contributions, t = tagCounts(s), d = depthOf(s);
+  if (!c.length) return "Make one contribution next session. A short question about the case is a great start, and a written comment counts too.";
+  if (c.length >= 6) return "Leave space for others: pick your one or two strongest points and invite a classmate to respond.";
+  if (d < 50) return "Back your next point with a specific figure or example from the case to make it more substantive.";
+  if (!t.B) return "Try responding directly to a classmate's point, to show how your idea builds on the discussion.";
+  if (!t.Q) return "Try asking one question that challenges an assumption in the case.";
+  return "Try to speak earlier in the session, so others have time to build on your ideas.";
+}
+
+const modalWrap = $("#modal-wrap"), modal = $("#modal");
+let modalStudent = null;
+function openModal(s) {
+  modalStudent = s;
+  const band = bandOf(state.grades[s.id]);
+  modal.innerHTML = `
+    <h2 id="m-title" tabindex="-1">Mid-term feedback preview</h2>
+    <p class="small muted">This is exactly what ${esc(firstName(s))} would receive.</p>
+    <div class="letter">
+      <p>Hi ${esc(firstName(s))},</p>
+      <h3>Strengths</h3>
+      <ul>${strengths(s).map(x => `<li>${esc(x)}</li>`).join("")}</ul>
+      <h3>One thing to improve</h3>
+      <p style="margin:0">${esc(improvement(s))}</p>
+      <h3>Current participation band</h3>
+      <p style="margin:0">${band ? `<strong>${band.name}</strong> (${band.range})` : `<strong>Not yet graded</strong>. Your professor hasn't set a band yet.`}</p>
+      <p class="foot">${icon("lock")}Only you can see this. Your professor sets your final grade.</p>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="m-close">Close</button>
+      <button type="button" class="btn btn-primary" id="m-send">Send (demo)</button>
+    </div>`;
+  modalWrap.hidden = false;
+  panel.inert = true;
+  $("#m-title").focus();
+  $("#m-close").addEventListener("click", closeModal);
+  $("#m-send").addEventListener("click", () => toast("Sent"));
+}
+function closeModal() {
+  if (modalWrap.hidden) return;
+  modalWrap.hidden = true;
+  modal.innerHTML = "";
+  panel.inert = false;
+  modalStudent = null;
+  const b = $("#fb-open");
+  if (b) b.focus();
+}
+$("#modal-backdrop").addEventListener("click", closeModal);
+modal.addEventListener("keydown", e => trapFocus(modal, e));
+
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  if (!modalWrap.hidden) { closeModal(); return; }
+  if (state.selected) { closePanel(); return; }
+  if (!tip.hidden) showTip(false);
+});
+document.addEventListener("click", e => { if (!tip.hidden && !e.target.closest(".tip-wrap")) showTip(false); });
+
+async function boot() {
+  if (location.protocol.startsWith("http")) {
+    try {
+      const d = await api.call("GET", "/api/dashboard");
+      DATA.session = { ...DATA.session, ...d.session };
+      DATA.students = d.students;
+      DATA.summary = d.summary;
+      state.grades = Object.fromEntries(d.students.filter(s => s.grade != null).map(s => [s.id, s.grade]));
+      state.notes = d.notes;
+      state.reviewed = !!(d.summary && d.summary.reviewed);
+      api.online = true;
+    } catch (err) {
+      api.loadError = err.message;
+    }
+  }
+  $(".proto-label").textContent = api.online ? "Prototype · sample data only · saved to database" : "Prototype · sample data only";
+  if (api.loadError) {
+    const box = $("#load-error");
+    box.innerHTML = `${icon("alert")}<span>Couldn't load from the database: ${esc(api.loadError)} Showing built-in sample data; changes won't be saved.</span>`;
+    box.hidden = false;
+  }
+  renderDashboard();
+}
+boot();
+</script>
+</body>
+</html>

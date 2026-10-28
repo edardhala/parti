@@ -5,3 +5,5 @@ __pycache__/
 instance/
 *.db
 .env
+.coverage
+*.egg-info/
